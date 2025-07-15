@@ -1,8 +1,6 @@
 import { BackButton } from './BackButton';
-import { LogoutButton } from './LogoutButton';
 import MobileBottomNav from './MobileBottomNav';
 import MobileHeader from './MobileHeader';
-import { SettingsButton } from './SettingsButton';
 import Sidebar from './Sidebar';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -33,10 +31,8 @@ const PageLayout = ({ children, activePath = '/' }: PageLayoutProps) => {
             </div>
           )}
 
-          {/* 桌面端顶部按钮 */}
+          {/* 桌面端顶部按钮：只保留主题切换 */}
           <div className='absolute top-2 right-4 z-20 hidden md:flex items-center gap-2'>
-            <SettingsButton />
-            <LogoutButton />
             <ThemeToggle />
           </div>
 
