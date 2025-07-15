@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const nextConfig = {
-  output: 'standalone',
+  output: process.env.BUILD_MODE === 'tauri' ? 'export' : 'standalone',
+  trailingSlash: process.env.BUILD_MODE === 'tauri' ? true : false,
   eslint: {
     dirs: ['src'],
   },
@@ -23,6 +24,13 @@ const nextConfig = {
       },
     ],
   },
+
+  // 静态导出时跳过 API 路由
+  ...(process.env.BUILD_MODE === 'tauri' && {
+    async rewrites() {
+      return [];
+    },
+  }),
 
   webpack(config) {
     // Grab the existing rule that handles SVG imports
@@ -66,7 +74,7 @@ const nextConfig = {
 
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === 'development' || process.env.BUILD_MODE === 'tauri',
   register: true,
   skipWaiting: true,
 });

@@ -1,3 +1,4 @@
+import { getApiUrl } from './api-config';
 import { DoubanItem, DoubanResult } from './types';
 
 interface DoubanApiResponse {
@@ -194,7 +195,9 @@ export async function getDoubanData(
     // 使用服务端 API（当没有设置代理 URL 时）
     const { type, tag, pageSize = 16, pageStart = 0 } = params;
     const response = await fetch(
-      `/api/douban?type=${type}&tag=${tag}&pageSize=${pageSize}&pageStart=${pageStart}`
+      getApiUrl(
+        `/api/douban?type=${type}&tag=${tag}&pageSize=${pageSize}&pageStart=${pageStart}`
+      )
     );
 
     if (!response.ok) {

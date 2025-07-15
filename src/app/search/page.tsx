@@ -5,6 +5,7 @@ import { Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 
+import { getApiUrl } from '@/lib/api-config';
 import {
   addSearchHistory,
   clearSearchHistory,
@@ -125,7 +126,7 @@ function SearchPageClient() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/search?q=${encodeURIComponent(query.trim())}`
+        getApiUrl(`/api/search?q=${encodeURIComponent(query.trim())}`)
       );
       const data = await response.json();
       setSearchResults(

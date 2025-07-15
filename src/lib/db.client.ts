@@ -354,8 +354,11 @@ if (typeof window !== 'undefined') {
 }
 
 // ---- 工具函数 ----
+import { getApiUrl } from './api-config';
+
 async function fetchFromApi<T>(path: string): Promise<T> {
-  const res = await fetch(path);
+  const url = getApiUrl(path);
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`请求 ${path} 失败: ${res.status}`);
   return (await res.json()) as T;
 }
@@ -457,7 +460,7 @@ export async function savePlayRecord(
 
     // 异步同步到数据库
     try {
-      const res = await fetch('/api/playrecords', {
+      const res = await fetch(getApiUrl('/api/playrecords'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -648,7 +651,7 @@ export async function addSearchHistory(keyword: string): Promise<void> {
 
     // 异步同步到数据库
     try {
-      const res = await fetch('/api/searchhistory', {
+      const res = await fetch(getApiUrl('/api/searchhistory'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -866,7 +869,7 @@ export async function saveFavorite(
 
     // 异步同步到数据库
     try {
-      const res = await fetch('/api/favorites', {
+      const res = await fetch(getApiUrl('/api/favorites'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

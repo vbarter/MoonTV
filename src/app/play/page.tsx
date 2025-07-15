@@ -18,6 +18,7 @@ import {
   savePlayRecord,
   subscribeToDataUpdates,
 } from '@/lib/db.client';
+import { getApiUrl } from '@/lib/api-config';
 import { SearchResult } from '@/lib/types';
 import { getVideoResolutionFromM3u8, processImageUrl } from '@/lib/utils';
 
@@ -454,7 +455,7 @@ function PlayPageClient() {
       // 根据搜索词获取全部源信息
       try {
         const response = await fetch(
-          `/api/search?q=${encodeURIComponent(query.trim())}`
+          getApiUrl(`/api/search?q=${encodeURIComponent(query.trim())}`)
         );
         if (!response.ok) {
           throw new Error('搜索失败');
@@ -485,7 +486,7 @@ function PlayPageClient() {
         }
 
         const detailResponse = await fetch(
-          `/api/detail?source=${currentSource}&id=${currentId}`
+          getApiUrl(`/api/detail?source=${currentSource}&id=${currentId}`)
         );
         if (!detailResponse.ok) {
           throw new Error('获取视频详情失败');

@@ -5,6 +5,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
+import { getApiUrl } from '@/lib/api-config';
+
 import { useSite } from '@/components/SiteProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -36,7 +38,7 @@ function LoginPageClient() {
 
     try {
       setLoading(true);
-      const res = await fetch('/api/login', {
+      const res = await fetch(getApiUrl('/api/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
