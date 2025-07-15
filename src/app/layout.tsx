@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 
 import './globals.css';
 import 'sweetalert2/dist/sweetalert2.min.css';
@@ -63,16 +64,18 @@ export default async function RootLayout({
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
-        {/* Umami Analytics */}
-        <script
-          defer
-          src="https://cloud.umami.is/script.js"
-          data-website-id="e9daaa83-b36c-4b49-80b6-d728a7d64a69"
-        />
+
       </head>
       <body
         className={`${inter.className} min-h-screen bg-white text-gray-900 dark:bg-black dark:text-gray-200`}
       >
+        {/* Umami Analytics */}
+        <Script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="e9daaa83-b36c-4b49-80b6-d728a7d64a69"
+          strategy="afterInteractive"
+        />
         <ThemeProvider
           attribute='class'
           defaultTheme='system'
