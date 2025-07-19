@@ -76,6 +76,14 @@
     "ikun": {
       "api": "https://ikunzyapi.com/api.php/provide/vod",
       "name": "iKun资源"
+    },
+    "bdy": {
+      "api": "https://api.apibdzy.com/api.php/provide/vod",
+      "name": "百度云资源"
+    },
+    "uky": {
+      "api": "https://api.ukuapi.com/api.php/provide/vod",
+      "name": "U酷资源"
     }
   }
 }
