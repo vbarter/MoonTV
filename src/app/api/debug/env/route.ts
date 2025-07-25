@@ -35,20 +35,12 @@ export async function GET(req: NextRequest) {
     // 获取环境摘要
     const summary = getEnvironmentSummary();
 
-    // 检查Upstash连接
-    let upstashStatus = 'unknown';
-    if (summary.storageType === 'upstash') {
-      try {
-        // 尝试创建Upstash客户端来测试连接
-        const { UpstashRedisStorage } = await import('@/lib/upstash.db');
-        const storage = new UpstashRedisStorage();
-
-        // 尝试执行一个简单的操作
-        await storage.checkUserExist('__test_user__');
-        upstashStatus = 'connected';
-      } catch (error: any) {
-        upstashStatus = `connection_failed: ${error.message}`;
-      }
+    // 检查数据库连接状态（简化版本，避免动态导入问题）
+    let dbStatus = 'unknown';
+    if (summary.storageType !== 'localstorage') {
+      // 暂时跳过实际连接测试，避免构建时的导入问题
+      // 实际部署时，可以通过日志查看连接状态
+      dbStatus = 'config_check_only';
     }
 
     const response = {
@@ -60,7 +52,7 @@ export async function GET(req: NextRequest) {
       },
       environment: {
         ...summary,
-        upstashStatus,
+        dbStatus,
       },
       headers: {
         userAgent: req.headers.get('user-agent'),
@@ -71,7 +63,8 @@ export async function GET(req: NextRequest) {
       cloudflareDetection: {
         hasCaches: typeof globalThis.caches !== 'undefined',
         hasCloudflareGlobal:
-          typeof globalThis.CloudflareWorkersGlobalScope !== 'undefined',
+          typeof (globalThis as Record<string, unknown>)
+            .CloudflareWorkersGlobalScope !== 'undefined',
         cfRayHeader: !!req.headers.get('cf-ray'),
       },
     };
@@ -85,13 +78,13 @@ export async function GET(req: NextRequest) {
         Expires: '0',
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('环境调试检查失败:', error);
 
     return NextResponse.json(
       {
         error: '环境检查失败',
-        message: error.message,
+        message: (error as Error).message,
         timestamp: new Date().toISOString(),
       },
       { status: 500 }

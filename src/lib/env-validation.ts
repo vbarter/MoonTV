@@ -115,7 +115,7 @@ function validateRedisConfig(errors: string[], warnings: string[]): void {
 /**
  * 验证D1配置
  */
-function validateD1Config(errors: string[], warnings: string[]): void {
+function validateD1Config(errors: string[], _warnings: string[]): void {
   const d1DatabaseId = process.env.D1_DATABASE_ID;
 
   if (!d1DatabaseId) {
@@ -176,7 +176,8 @@ export function validateCloudflareEnvironment(): void {
   // 检查是否在Cloudflare Workers环境中
   const isCloudflare =
     typeof globalThis.caches !== 'undefined' &&
-    typeof globalThis.CloudflareWorkersGlobalScope !== 'undefined';
+    typeof (globalThis as Record<string, unknown>)
+      .CloudflareWorkersGlobalScope !== 'undefined';
 
   if (isCloudflare) {
     console.log('✅ 检测到Cloudflare Workers环境');
@@ -196,7 +197,7 @@ export function validateCloudflareEnvironment(): void {
 /**
  * 获取环境信息摘要
  */
-export function getEnvironmentSummary(): Record<string, any> {
+export function getEnvironmentSummary(): Record<string, unknown> {
   return {
     storageType: process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage',
     enableRegister: process.env.NEXT_PUBLIC_ENABLE_REGISTER === 'true',
