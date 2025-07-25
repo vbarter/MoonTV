@@ -11,11 +11,18 @@ const SEARCH_HISTORY_LIMIT = 20;
 // 添加Upstash Redis操作重试包装器
 async function withRetry<T>(
   operation: () => Promise<T>,
-  maxRetries = 3
+  maxRetries = 3,
+  operationName = 'Upstash操作'
 ): Promise<T> {
+  console.log(`开始执行${operationName}...`);
+
   for (let i = 0; i < maxRetries; i++) {
     try {
-      return await operation();
+      const result = await operation();
+      if (i > 0) {
+        console.log(`${operationName}重试成功 (尝试${i + 1}次)`);
+      }
+      return result;
     } catch (err: any) {
       const isLastAttempt = i === maxRetries - 1;
       const isConnectionError =
@@ -26,22 +33,30 @@ async function withRetry<T>(
         err.code === 'EPIPE' ||
         err.name === 'UpstashError';
 
+      console.error(`${operationName}失败 (尝试${i + 1}/${maxRetries}):`, {
+        错误类型: err.constructor.name,
+        错误信息: err.message,
+        错误代码: err.code,
+        是否连接错误: isConnectionError,
+        是否最后一次尝试: isLastAttempt,
+      });
+
       if (isConnectionError && !isLastAttempt) {
-        console.log(
-          `Upstash Redis operation failed, retrying... (${i + 1}/${maxRetries})`
-        );
-        console.error('Error:', err.message);
+        const waitTime = 1000 * (i + 1);
+        console.log(`检测到连接错误，将在${waitTime}ms后重试...`);
 
         // 等待一段时间后重试
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
         continue;
       }
 
+      // 如果不是连接错误或者是最后一次尝试，直接抛出错误
+      console.error(`${operationName}彻底失败:`, err);
       throw err;
     }
   }
 
-  throw new Error('Max retries exceeded');
+  throw new Error(`${operationName}超过最大重试次数`);
 }
 
 export class UpstashRedisStorage implements IStorage {
@@ -146,7 +161,11 @@ export class UpstashRedisStorage implements IStorage {
 
   async registerUser(userName: string, password: string): Promise<void> {
     // 简单存储明文密码，生产环境应加密
-    await withRetry(() => this.client.set(this.userPwdKey(userName), password));
+    await withRetry(
+      () => this.client.set(this.userPwdKey(userName), password),
+      3,
+      `注册用户${userName}`
+    );
   }
 
   async verifyUser(userName: string, password: string): Promise<boolean> {
@@ -160,8 +179,10 @@ export class UpstashRedisStorage implements IStorage {
   // 检查用户是否存在
   async checkUserExist(userName: string): Promise<boolean> {
     // 使用 EXISTS 判断 key 是否存在
-    const exists = await withRetry(() =>
-      this.client.exists(this.userPwdKey(userName))
+    const exists = await withRetry(
+      () => this.client.exists(this.userPwdKey(userName)),
+      3,
+      `检查用户${userName}是否存在`
     );
     return exists === 1;
   }
@@ -254,7 +275,11 @@ export class UpstashRedisStorage implements IStorage {
   }
 
   async setAdminConfig(config: AdminConfig): Promise<void> {
-    await withRetry(() => this.client.set(this.adminConfigKey(), config));
+    await withRetry(
+      () => this.client.set(this.adminConfigKey(), config),
+      3,
+      '保存管理员配置'
+    );
   }
 }
 
@@ -267,27 +292,49 @@ function getUpstashRedisClient(): Redis {
     const upstashUrl = process.env.UPSTASH_URL;
     const upstashToken = process.env.UPSTASH_TOKEN;
 
-    if (!upstashUrl || !upstashToken) {
-      throw new Error(
-        'UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN env variables must be set'
-      );
-    }
-
-    // 创建 Upstash Redis 客户端
-    client = new Redis({
-      url: upstashUrl,
-      token: upstashToken,
-      // 可选配置
-      retry: {
-        retries: 3,
-        backoff: (retryCount: number) =>
-          Math.min(1000 * Math.pow(2, retryCount), 30000),
-      },
+    console.log('Upstash环境变量检查:', {
+      hasUrl: !!upstashUrl,
+      hasToken: !!upstashToken,
+      urlLength: upstashUrl?.length || 0,
+      tokenLength: upstashToken?.length || 0,
     });
 
-    console.log('Upstash Redis client created successfully');
+    if (!upstashUrl || !upstashToken) {
+      const missingVars = [];
+      if (!upstashUrl) missingVars.push('UPSTASH_URL');
+      if (!upstashToken) missingVars.push('UPSTASH_TOKEN');
 
-    (global as any)[globalKey] = client;
+      const errorMsg = `缺少必需的Upstash环境变量: ${missingVars.join(
+        ', '
+      )}. 请在Cloudflare/Vercel项目中设置这些环境变量。`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    try {
+      // 创建 Upstash Redis 客户端
+      client = new Redis({
+        url: upstashUrl,
+        token: upstashToken,
+        // 可选配置
+        retry: {
+          retries: 3,
+          backoff: (retryCount: number) =>
+            Math.min(1000 * Math.pow(2, retryCount), 30000),
+        },
+      });
+
+      console.log('Upstash Redis client created successfully');
+      (global as any)[globalKey] = client;
+    } catch (err: any) {
+      console.error('创建Upstash Redis客户端失败:', err);
+      console.error('错误详情:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack,
+      });
+      throw new Error(`Upstash Redis客户端初始化失败: ${err.message}`);
+    }
   }
 
   return client;
