@@ -4,6 +4,13 @@ module.exports = {
     es2021: true,
     node: true,
   },
+  ignorePatterns: [
+    'public/sw.js',
+    'public/workbox-*.js',
+    '.next/',
+    'out/',
+    'dist/',
+  ],
   plugins: ['@typescript-eslint', 'simple-import-sort', 'unused-imports'],
   extends: [
     'eslint:recommended',

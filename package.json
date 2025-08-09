@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm gen:runtime && pnpm gen:manifest && next dev -H 0.0.0.0",
     "build": "pnpm gen:runtime && pnpm gen:manifest && next build",
+    "pages:build": "pnpm gen:runtime && pnpm gen:manifest && next build && next-on-pages",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "eslint src --fix && pnpm format",
@@ -81,7 +82,11 @@
     "typescript": "^4.9.5"
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings=0",
+      "prettier -w"
+    ],
+    "scripts/**/*.{js,jsx,ts,tsx}": [
       "eslint --max-warnings=0",
       "prettier -w"
     ],
