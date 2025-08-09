@@ -279,7 +279,18 @@ export default function VideoCard({
           fill
           className='object-cover'
           referrerPolicy='no-referrer'
+          loading='lazy'
           onLoadingComplete={() => setIsLoading(true)}
+          onError={(e) => {
+            // 图片加载失败时的重试机制
+            const img = e.target as HTMLImageElement;
+            if (!img.dataset.retried) {
+              img.dataset.retried = 'true';
+              setTimeout(() => {
+                img.src = processImageUrl(actualPoster);
+              }, 2000);
+            }
+          }}
         />
 
         {/* 悬浮遮罩 */}
