@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getCacheTime, getConfig } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
+import { SearchResult } from '@/lib/types';
 import { yellowWords } from '@/lib/yellow';
 
 export const runtime = 'edge';
@@ -44,8 +45,10 @@ export async function GET(request: Request) {
     const results = await Promise.allSettled(searchPromises);
     const successResults = results
       .filter((result) => result.status === 'fulfilled')
-      .map((result) => (result as PromiseFulfilledResult<unknown[]>).value);
-    let flattenedResults = successResults.flat();
+      .map(
+        (result) => (result as PromiseFulfilledResult<SearchResult[]>).value
+      );
+    let flattenedResults: SearchResult[] = successResults.flat();
     if (!config.SiteConfig.DisableYellowFilter) {
       flattenedResults = flattenedResults.filter((result) => {
         const typeName = result.type_name || '';
