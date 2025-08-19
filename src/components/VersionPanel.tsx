@@ -2,16 +2,7 @@
 
 'use client';
 
-import {
-  Bug,
-  CheckCircle,
-  ChevronDown,
-  ChevronUp,
-  Download,
-  Plus,
-  RefreshCw,
-  X,
-} from 'lucide-react';
+import { Bug, Download, Plus, RefreshCw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -39,7 +30,6 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
   const [remoteChangelog, setRemoteChangelog] = useState<ChangelogEntry[]>([]);
   const [hasUpdate, setIsHasUpdate] = useState(false);
   const [latestVersion, setLatestVersion] = useState<string>('');
-  const [showRemoteContent, setShowRemoteContent] = useState(false);
 
   // 确保组件已挂载
   useEffect(() => {
@@ -291,193 +281,6 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
         {/* 内容区域 */}
         <div className='p-3 sm:p-6 overflow-y-auto max-h-[calc(95vh-140px)] sm:max-h-[calc(90vh-120px)]'>
           <div className='space-y-3 sm:space-y-6'>
-            {/* 远程更新信息 */}
-            {hasUpdate && (
-              <div className='bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 sm:p-4'>
-                <div className='flex flex-col gap-3'>
-                  <div className='flex items-center gap-2 sm:gap-3'>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 dark:bg-yellow-800/40 rounded-full flex items-center justify-center flex-shrink-0'>
-                      <Download className='w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-400' />
-                    </div>
-                    <div className='min-w-0 flex-1'>
-                      <h4 className='text-sm sm:text-base font-semibold text-yellow-800 dark:text-yellow-200'>
-                        发现新版本
-                      </h4>
-                      <p className='text-xs sm:text-sm text-yellow-700 dark:text-yellow-300 break-all'>
-                        v{CURRENT_VERSION} → v{latestVersion}
-                      </p>
-                    </div>
-                  </div>
-                  <a
-                    href='https://github.com/LunaTechLab/MoonTV'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='inline-flex items-center justify-center gap-2 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-xs sm:text-sm rounded-lg transition-colors shadow-sm w-full'
-                  >
-                    <Download className='w-3 h-3 sm:w-4 sm:h-4' />
-                    前往仓库
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* 当前为最新版本信息 */}
-            {!hasUpdate && (
-              <div className='bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 sm:p-4'>
-                <div className='flex flex-col gap-3'>
-                  <div className='flex items-center gap-2 sm:gap-3'>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 bg-green-100 dark:bg-green-800/40 rounded-full flex items-center justify-center flex-shrink-0'>
-                      <CheckCircle className='w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400' />
-                    </div>
-                    <div className='min-w-0 flex-1'>
-                      <h4 className='text-sm sm:text-base font-semibold text-green-800 dark:text-green-200'>
-                        当前为最新版本
-                      </h4>
-                      <p className='text-xs sm:text-sm text-green-700 dark:text-green-300 break-all'>
-                        已是最新版本 v{CURRENT_VERSION}
-                      </p>
-                    </div>
-                  </div>
-                  <a
-                    href='https://github.com/LunaTechLab/MoonTV'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='inline-flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg transition-colors shadow-sm w-full'
-                  >
-                    <CheckCircle className='w-3 h-3 sm:w-4 sm:h-4' />
-                    前往仓库
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* 远程可更新内容 */}
-            {hasUpdate && (
-              <div className='space-y-4'>
-                <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
-                  <h4 className='text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2'>
-                    <Download className='w-5 h-5 text-yellow-500' />
-                    远程更新内容
-                  </h4>
-                  <button
-                    onClick={() => setShowRemoteContent(!showRemoteContent)}
-                    className='inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800/30 dark:hover:bg-yellow-800/50 dark:text-yellow-200 rounded-lg transition-colors text-sm w-full sm:w-auto'
-                  >
-                    {showRemoteContent ? (
-                      <>
-                        <ChevronUp className='w-4 h-4' />
-                        收起
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className='w-4 h-4' />
-                        查看更新内容
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {showRemoteContent && remoteChangelog.length > 0 && (
-                  <div className='space-y-4'>
-                    {remoteChangelog
-                      .filter((entry) => {
-                        // 找到第一个本地版本，过滤掉本地已有的版本
-                        const localVersions = changelog.map(
-                          (local) => local.version
-                        );
-                        return !localVersions.includes(entry.version);
-                      })
-                      .map((entry, index) => (
-                        <div
-                          key={index}
-                          className={`p-4 rounded-lg border ${
-                            entry.version === latestVersion
-                              ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-                              : 'bg-gray-50 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700'
-                          }`}
-                        >
-                          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3'>
-                            <div className='flex flex-wrap items-center gap-2'>
-                              <h4 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                                v{entry.version}
-                              </h4>
-                              {entry.version === latestVersion && (
-                                <span className='px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 rounded-full flex items-center gap-1'>
-                                  远程最新
-                                </span>
-                              )}
-                            </div>
-                            <div className='flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
-                              {entry.date}
-                            </div>
-                          </div>
-
-                          {entry.added && entry.added.length > 0 && (
-                            <div className='mb-3'>
-                              <h5 className='text-sm font-medium text-green-600 dark:text-green-400 mb-2 flex items-center gap-1'>
-                                <Plus className='w-4 h-4' />
-                                新增功能
-                              </h5>
-                              <ul className='space-y-1'>
-                                {entry.added.map((item, itemIndex) => (
-                                  <li
-                                    key={itemIndex}
-                                    className='text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2'
-                                  >
-                                    <span className='w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0'></span>
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          {entry.changed && entry.changed.length > 0 && (
-                            <div className='mb-3'>
-                              <h5 className='text-sm font-medium text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-1'>
-                                <RefreshCw className='w-4 h-4' />
-                                功能改进
-                              </h5>
-                              <ul className='space-y-1'>
-                                {entry.changed.map((item, itemIndex) => (
-                                  <li
-                                    key={itemIndex}
-                                    className='text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2'
-                                  >
-                                    <span className='w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0'></span>
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          {entry.fixed && entry.fixed.length > 0 && (
-                            <div>
-                              <h5 className='text-sm font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center gap-1'>
-                                <Bug className='w-4 h-4' />
-                                问题修复
-                              </h5>
-                              <ul className='space-y-1'>
-                                {entry.fixed.map((item, itemIndex) => (
-                                  <li
-                                    key={itemIndex}
-                                    className='text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2'
-                                  >
-                                    <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0'></span>
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* 变更日志标题 */}
             <div className='border-b border-gray-200 dark:border-gray-700 pb-4'>
               <h4 className='text-lg font-semibold text-gray-800 dark:text-gray-200 pb-3 sm:pb-4'>
@@ -485,6 +288,27 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
               </h4>
 
               <div className='space-y-4'>
+                {/* 远程变更日志（如果有更新） */}
+                {hasUpdate && remoteChangelog.length > 0 && (
+                  <>
+                    <div className='mb-4'>
+                      <h5 className='text-sm font-medium text-yellow-700 dark:text-yellow-400 mb-2'>
+                        🔄 可用更新
+                      </h5>
+                      {remoteChangelog
+                        .filter(
+                          (entry) =>
+                            compareVersions(entry.version) ===
+                            UpdateStatus.HAS_UPDATE
+                        )
+                        .map((entry) =>
+                          renderChangelogEntry(entry, false, true)
+                        )}
+                    </div>
+                    <div className='border-t border-gray-200 dark:border-gray-700 pt-4'></div>
+                  </>
+                )}
+
                 {/* 本地变更日志 */}
                 {changelog.map((entry) =>
                   renderChangelogEntry(
