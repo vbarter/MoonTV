@@ -18,7 +18,9 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
-import { checkForUpdates, UpdateStatus } from '@/lib/version';
+import { checkForUpdates, CURRENT_VERSION, UpdateStatus } from '@/lib/version';
+
+import { VersionPanel } from './VersionPanel';
 
 interface AuthInfo {
   username?: string;
@@ -30,6 +32,7 @@ export const UserMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isVersionPanelOpen, setIsVersionPanelOpen] = useState(false);
   const [authInfo, setAuthInfo] = useState<AuthInfo | null>(null);
   const [storageType, setStorageType] = useState<string>('localstorage');
   const [mounted, setMounted] = useState(false);
@@ -47,7 +50,7 @@ export const UserMenu: React.FC = () => {
 
   // 豆瓣数据源选项
   const doubanDataSourceOptions = [
-    { value: 'direct', label: '实例服务端（直接请求豆瓣）' },
+    { value: 'direct', label: '直连（服务器直接请求豆瓣）' },
     { value: 'cors-proxy-zwei', label: 'Cors Proxy By Zwei' },
     {
       value: 'cmliussss-cdn-tencent',
@@ -79,7 +82,7 @@ export const UserMenu: React.FC = () => {
 
   // 版本检查相关状态
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
-  const [_isChecking, setIsChecking] = useState(true);
+  const [isChecking, setIsChecking] = useState(true);
 
   // 确保组件已挂载
   useEffect(() => {
@@ -114,8 +117,7 @@ export const UserMenu: React.FC = () => {
       if (savedDoubanDataSource !== null) {
         setDoubanDataSource(savedDoubanDataSource);
       } else if (defaultDoubanProxyType) {
-        // 如果没有设置，则设置为直接请求豆瓣
-        setDoubanDataSource('direct');
+        setDoubanDataSource(defaultDoubanProxyType);
       }
 
       const savedDoubanProxyUrl = localStorage.getItem('doubanProxyUrl');
@@ -135,7 +137,7 @@ export const UserMenu: React.FC = () => {
       if (savedDoubanImageProxyType !== null) {
         setDoubanImageProxyType(savedDoubanImageProxyType);
       } else if (defaultDoubanImageProxyType) {
-        setDoubanImageProxyType('direct');
+        setDoubanImageProxyType(defaultDoubanImageProxyType);
       }
 
       const savedDoubanImageProxyUrl = localStorage.getItem(
@@ -496,6 +498,32 @@ export const UserMenu: React.FC = () => {
 
           {/* 分割线 */}
           <div className='my-1 border-t border-gray-200 dark:border-gray-700'></div>
+
+          {/* 版本信息 */}
+          <button
+            onClick={() => {
+              setIsVersionPanelOpen(true);
+              handleCloseMenu();
+            }}
+            className='w-full px-3 py-2 text-center flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-xs'
+          >
+            <div className='flex items-center gap-1'>
+              <span className='font-mono'>v{CURRENT_VERSION}</span>
+              {!isChecking &&
+                updateStatus &&
+                updateStatus !== UpdateStatus.FETCH_FAILED && (
+                  <div
+                    className={`w-2 h-2 rounded-full -translate-y-2 ${
+                      updateStatus === UpdateStatus.HAS_UPDATE
+                        ? 'bg-yellow-500'
+                        : updateStatus === UpdateStatus.NO_UPDATE
+                        ? 'bg-green-400'
+                        : ''
+                    }`}
+                  ></div>
+                )}
+            </div>
+          </button>
         </div>
       </div>
     </>
@@ -541,7 +569,7 @@ export const UserMenu: React.FC = () => {
           <div className='space-y-3'>
             <div>
               <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                豆瓣数据源
+                豆瓣数据代理
               </h4>
               <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
                 选择获取豆瓣数据的方式
@@ -929,6 +957,12 @@ export const UserMenu: React.FC = () => {
       {isChangePasswordOpen &&
         mounted &&
         createPortal(changePasswordPanel, document.body)}
+
+      {/* 版本面板 */}
+      <VersionPanel
+        isOpen={isVersionPanelOpen}
+        onClose={() => setIsVersionPanelOpen(false)}
+      />
     </>
   );
 };
